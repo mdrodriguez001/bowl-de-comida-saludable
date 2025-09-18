@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bowls Saludables</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* =============== Variables & Reset =============== */
+  :root{
+    --bg: #f5f1e8;
+    --card: #ffffff;
+    --text: #4a4a4a;
+    --muted: #7a7a7a;
+
+    --blue-sky: #6ec5e9;
+    --rose: #e9a4b3;
+    --cacao: #d4a373;
+
+    --radius: 16px;
+    --shadow: 0 8px 24px rgba(0,0,0,.08);
+
+    /* vars para degradado dinámico */
+    --mx: 50;  /* 0..100  posición X del mouse en % */
+    --my: 50;  /* 0..100  posición Y del mouse en % */
+    --h: 200;  /* hue 0..360 */
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    color: var(--text);
+    font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    line-height:1.5;
+    min-height: 100dvh;
+
+    /* Degradado HSL reactivo al mouse */
+    background:
+      radial-gradient(
+        800px 600px at calc(var(--mx)*1%) calc(var(--my)*1%),
+        hsl(var(--h) 90% 95% / .95),
+        hsl(calc(var(--h) + 30) 85% 92% / .75) 35%,
+        var(--bg) 70%
+      );
+    transition: background-position .08s linear;
+  }
+
+  /* =============== Header =============== */
+  .header{
+    max-width:1100px; margin: 28px auto 0; padding: 0 20px;
+  }
+  .header h1{
+    font-size: clamp(26px, 4vw, 38px);
+    margin:0 0 6px 0;
+    color: var(--blue-sky);
+    font-weight:700;
+  }
+  .header p{
+    color: var(--rose);
+    margin:0 0 20px 0;
+    font-size:16px;
+    font-weight:600;
+  }
+
+  /* =============== Grid de productos =============== */
+  .menu{
+    max-width: 1100px;
+    margin: 12px auto 40px;
+    padding: 0 20px;
+    display:grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 20px;
+  }
+
+  /* =============== Card producto =============== */
+  .card{
+    grid-column: span 12;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+  .card:hover{
+    transform: translateY(-4px);
+    box-shadow: 0 14px 36px rgba(0,0,0,.15);
+  }
+
+  .card__media{
+    position: relative;
+    aspect-ratio: 16/10;
+    overflow:hidden;
+    background: #efeae2;
+  }
+  .card__media img{
+    width:100%; height:100%; object-fit: cover; display:block;
+    transition: transform .4s ease;
+  }
+  .card:hover .card__media img{ transform: scale(1.05); }
+
+  .badge{
+    position:absolute; top:12px; left:12px;
+    padding:6px 12px; font-size:13px; border-radius:999px;
+    background: rgba(255,255,255,.9); color: var(--text); font-weight:600;
+    border:1px solid rgba(0,0,0,.06); box-shadow: 0 4px 12px rgba(0,0,0,.06);
+  }
+
+  .card__body{ padding: 18px; display:grid; gap: 10px; }
+  .card__title{ margin:0; font-size: 20px; font-weight:700; }
+  .card__desc{ margin:0; color: var(--muted); font-size: 14px; }
+
+  .tags{ display:flex; flex-wrap:wrap; gap:8px; }
+  .tag{
+    font-size:12px; padding:6px 10px; border-radius:999px;
+    border:1px solid rgba(0,0,0,.1); background:#fff8; backdrop-filter: blur(2px);
+  }
+
+  .card__footer{ display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:8px; }
+  .price{ font-weight:700; font-size: 18px; }
+
+  .btn{
+    border:none; padding:10px 14px; border-radius:12px;
+    font-weight:600; cursor:pointer; background: var(--blue-sky); color:#fff;
+    transition: transform .15s ease, filter .15s ease;
+    box-shadow: 0 6px 16px rgba(110,197,233,.35);
+  }
+  .btn:hover{ transform: translateY(-2px); filter: brightness(1.1); }
+
+  /* Colores por tipo (opcional si usas slugs específicos) */
+  .card.coco   .btn{ background: var(--blue-sky); }
+  .card.berries .btn{ background: var(--rose); }
+  .card.choco  .btn{ background: var(--cacao); }
+
+  .tag.coco{ color: var(--blue-sky); border-color: var(--blue-sky); }
+  .tag.berries{ color: var(--rose); border-color: var(--rose); }
+  .tag.choco{ color: var(--cacao); border-color: var(--cacao); }
+
+  @media (min-width: 640px){ .card{ grid-column: span 6; } }
+  @media (min-width: 980px){ .card{ grid-column: span 4; } }
+
+  .btn:focus-visible{
+    outline: 3px solid color-mix(in oklab, var(--blue-sky) 60%, #fff);
+    outline-offset: 2px;
+  }
+  a, button { -webkit-tap-highlight-color: transparent; }
+
+  /* =============== Carrito flotante + Drawer =============== */
+  .cart-fab{
+    position: fixed; right: 20px; bottom: 20px; z-index: 60;
+    width: 56px; height: 56px; border-radius: 50%;
+    display:grid; place-items:center;
+    background:#121723; color:#fff; border:1px solid rgba(255,255,255,.12);
+    box-shadow: var(--shadow); cursor:pointer; text-decoration:none;
+    font-size: 22px; transition: transform .15s ease, background .15s ease;
+  }
+  .cart-fab:hover{ transform: translateY(-2px); background:#0f1420; }
+  .cart-badge{
+    position:absolute; top:-6px; right:-6px;
+    min-width: 22px; height:22px; padding:0 6px; border-radius: 999px;
+    background:#ff3b3b; color:#fff; display:grid; place-items:center;
+    font-size:12px; border:2px solid #f5f1e8;
+  }
+
+  #cart-toggle{ display:none; }
+  .cart-drawer{ position: fixed; inset: 0; pointer-events: none; z-index: 70; }
+  .cart-overlay{
+    position: absolute; inset:0; background: rgba(0,0,0,.55); opacity:0; transition: opacity .25s;
+  }
+  .cart-panel{
+    position: absolute; right: 0; top:0; bottom:0; width: min(420px, 92vw);
+    background: linear-gradient(180deg,#1a2030,#121723);
+    border-left:1px solid rgba(255,255,255,.08);
+    transform: translateX(100%); transition: transform .25s ease;
+    display:flex; flex-direction:column;
+    box-shadow: var(--shadow); color:#e8ebf1;
+  }
+  #cart-toggle:checked ~ .cart-drawer{ pointer-events:auto; }
+  #cart-toggle:checked ~ .cart-drawer .cart-overlay{ opacity:1; }
+  #cart-toggle:checked ~ .cart-drawer .cart-panel{ transform: translateX(0); }
+
+  .cart-header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px; border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .cart-title{ font-weight:800; }
+  .cart-close{
+    width:36px; height:36px; border-radius:50%;
+    display:grid; place-items:center; text-decoration:none; color:#fff;
+    background:#0f1420; border:1px solid rgba(255,255,255,.12);
+  }
+  .cart-body{ padding:12px 12px 0; overflow:auto; flex:1; }
+  .cart-empty{ color:#aab2c5; padding:12px; text-align:center; }
+
+  .cart-item{
+    display:grid; grid-template-columns:60px 1fr auto; gap:10px; align-items:center;
+    padding:10px; border:1px solid rgba(255,255,255,.06); border-radius:12px; margin-bottom:10px;
+    background:#141927;
+  }
+  .cart-item img{ width:60px; height:60px; object-fit:cover; border-radius:8px; }
+  .cart-item h4{ margin:0 0 4px; font-size:14px; }
+  .cart-item .price{ color:#aab2c5; font-size:13px; }
+  .qtty{ display:flex; align-items:center; gap:6px; }
+  .qbtn{
+    width:28px; height:28px; border-radius:8px; border:1px solid rgba(255,255,255,.12);
+    background:#0f1420; color:#fff; cursor:pointer;
+  }
+  .remove-btn{
+    background:none; border:none; color:#ff6b6b; cursor:pointer; font-size:12px; margin-left:8px;
+  }
+
+  .cart-footer{
+    border-top:1px solid rgba(255,255,255,.08);
+    padding:12px 16px; display:grid; gap:8px;
+  }
+  .cart-row{ display:flex; justify-content:space-between; align-items:center; }
+  .checkout{
+    padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,.12);
+    background:#2f6bff; color:#fff; font-weight:700; cursor:pointer;
+  }
+</style>
+</head>
+
+<body>
+  <!-- Botón flotante del carrito -->
+  <input type="checkbox" id="cart-toggle" hidden>
+  <label for="cart-toggle" class="cart-fab" aria-label="Abrir carrito">
+    🛒 <span class="cart-badge" id="cart-count">0</span>
+  </label>
+
+  <!-- Drawer del carrito -->
+  <div class="cart-drawer">
+    <label for="cart-toggle" class="cart-overlay" aria-label="Cerrar carrito"></label>
+    <aside class="cart-panel" role="dialog" aria-labelledby="cart-title">
+      <div class="cart-header">
+        <div class="cart-title" id="cart-title">Tu carrito</div>
+        <label for="cart-toggle" class="cart-close" aria-label="Cerrar">×</label>
+      </div>
+
+      <div class="cart-body">
+        <div id="cart-items">
+          <p class="cart-empty">Tu carrito está vacío.</p>
+        </div>
+      </div>
+
+      <div class="cart-footer">
+        <div class="cart-row">
+          <span>Subtotal</span>
+          <strong id="cart-subtotal">$0</strong>
+        </div>
+        <button class="checkout">Finalizar compra</button>
+        <small class="muted">* Precios en MXN, ejemplo demostrativo.</small>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Encabezado -->
+  <header class="header" role="banner">
+    <h1>Bowls Saludables</h1>
+    <p>Por Maria Dilean</p>
+  </header>
+
+  <!-- Catalogo dinámico (lo llena JS con /api/bowls/) -->
+  <main class="menu" role="main" aria-label="Menú de bowls"></main>
+
+<script>
+/* ==================== CONFIG ==================== */
+const API_BASE = "http://127.0.0.1:8000/api";   // ajusta el puerto si cambias runserver
+const STORAGE_KEY = "cart_bowls";
+
+/* ==================== UTIL ==================== */
+const $  = (sel, ctx = document) => ctx.querySelector(sel);
+const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
+const money = (n) => `$${Number(n).toFixed(0)}`;
+
+/* ===== Degradado HSL reactivo ===== */
+(function attachMouseGradient(){
+  const lerp = (a,b,t)=> a+(b-a)*t;
+  let targetX = 50, targetY = 50, targetH = 200;
+
+  const onMove = (e)=>{
+    const w = window.innerWidth || 1;
+    const h = window.innerHeight || 1;
+    const x = (e.clientX / w) * 100;
+    const y = (e.clientY / h) * 100;
+    targetX = x; targetY = y;
+    // hue según X para un toque divertido
+    targetH = 170 + (x/100)*40; // 170..210
+  };
+  window.addEventListener('mousemove', onMove, {passive:true});
+
+  function tick(){
+    const curX = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--mx')) || 50;
+    const curY = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--my')) || 50;
+    const curH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--h')) || 200;
+
+    const nx = lerp(curX, targetX, 0.15);
+    const ny = lerp(curY, targetY, 0.15);
+    const nh = lerp(curH, targetH, 0.12);
+
+    document.documentElement.style.setProperty('--mx', nx.toFixed(2));
+    document.documentElement.style.setProperty('--my', ny.toFixed(2));
+    document.documentElement.style.setProperty('--h',  nh.toFixed(2));
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+/* ==================== CARRITO ==================== */
+let cart = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); // {id: { id,name,price,img,qty }}
+
+function saveCart(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(cart)); }
+
+function cartTotals(){
+  let qty = 0, sum = 0;
+  Object.values(cart).forEach(it => { qty += it.qty; sum += it.qty * Number(it.price); });
+  const $count = $("#cart-count");
+  const $sub = $("#cart-subtotal");
+  if($count) $count.textContent = qty;
+  if($sub)   $sub.textContent = money(sum);
+}
+
+function renderCart(){
+  const $wrap = $("#cart-items");
+  if(!$wrap) return;
+
+  if(Object.keys(cart).length === 0){
+    $wrap.innerHTML = `<p class="cart-empty">Tu carrito está vacío.</p>`;
+    cartTotals();
+    return;
+  }
+  const html = Object.values(cart).map(it => `
+    <div class="cart-item" data-id="${it.id}">
+      <img src="${it.img || ""}" alt="${it.name}">
+      <div>
+        <h4>${it.name}</h4>
+        <div class="price">${money(it.price)} c/u
+          <button class="remove-btn" data-action="remove" aria-label="Quitar">Quitar</button>
+        </div>
+      </div>
+      <div class="qtty">
+        <button class="qbtn" data-action="dec" aria-label="Restar">−</button>
+        <span>${it.qty}</span>
+        <button class="qbtn" data-action="inc" aria-label="Sumar">+</button>
+      </div>
+    </div>
+  `).join("");
+  $wrap.innerHTML = html;
+  cartTotals();
+}
+
+function addToCart({id, name, price, img}){
+  if(!cart[id]) cart[id] = { id, name, price: Number(price), img: img || "", qty: 0 };
+  cart[id].qty++;
+  saveCart(); renderCart();
+  const toggle = $("#cart-toggle"); if(toggle) toggle.checked = true; // abrir drawer
+}
+
+document.addEventListener("click", (e)=>{
+  const btn = e.target.closest(".add-to-cart");
+  if(btn){
+    addToCart({
+      id: btn.dataset.id,
+      name: btn.dataset.name,
+      price: btn.dataset.price,
+      img: btn.dataset.img
+    });
+    return;
+  }
+
+  const act = e.target.dataset.action;
+  const item = e.target.closest(".cart-item");
+  if(!act || !item) return;
+  const id = item.dataset.id;
+  if(act === "inc") cart[id].qty++;
+  if(act === "dec") cart[id].qty = Math.max(0, cart[id].qty - 1);
+  if(act === "remove") delete cart[id];
+  if(cart[id] && cart[id].qty === 0) delete cart[id];
+  saveCart(); renderCart();
+});
+
+/* ==================== API ==================== */
+async function fetchBowls(){
+  const r = await fetch(`${API_BASE}/bowls/`);
+  if(!r.ok) throw new Error(`HTTP ${r.status}`);
+  return await r.json();
+}
+
+function cardHTML(b){
+  // clases opcionales por slug para acentos
+  let accent = "";
+  if(b.slug === "coco") accent = "coco";
+  else if(b.slug === "frutos-rojos" || b.slug === "frutos_rojos" || /berry|frutos/i.test(b.slug)) accent = "berries";
+  else if(/choco|cacao/i.test(b.slug)) accent = "choco";
+
+  return `
+  <article class="card ${accent}">
+    <div class="card__media">
+      <span class="badge">${b.name}</span>
+      <img src="${b.image_url || ""}" alt="${b.name}">
+    </div>
+    <div class="card__body">
+      <h3 class="card__title">${b.name}</h3>
+      <p class="card__desc">${b.description || ""}</p>
+      <div class="tags"></div>
+      <div class="card__footer">
+        <span class="price">${money(b.price)}</span>
+        <button class="btn add-to-cart"
+          data-id="${b.slug || b.id}"
+          data-name="${b.name}"
+          data-price="${b.price}"
+          data-img="${b.image_url || ""}"
+          aria-label="Agregar ${b.name} al carrito">Agregar</button>
+      </div>
+    </div>
+  </article>`;
+}
+
+async function loadCatalog(){
+  const $menu = document.querySelector("main.menu");
+  if(!$menu) return;
+
+  try{
+    const bowls = await fetchBowls();
+    if(!Array.isArray(bowls)) throw new Error("Respuesta inesperada");
+    $menu.innerHTML = bowls.map(cardHTML).join("");
+  }catch(err){
+    console.warn("No pude cargar desde API, ¿runserver arriba? Detalle:", err);
+    // Si quieres, aquí podrías mostrar un mensaje en UI:
+    $menu.innerHTML = `
+      <p style="grid-column:1/-1; color:#b00; background:#fff; padding:12px; border-radius:12px;">
+        No se pudo cargar el catálogo desde la API. Revisa que el servidor Django esté corriendo en <code>${API_BASE}</code>.
+      </p>`;
+  }
+}
+
+/* ==================== CHECKOUT (POST /orders) ==================== */
+async function checkout(){
+  const items = Object.values(cart).map(it => ({
+    bowl: null, name: it.name, price: Number(it.price), quantity: it.qty, image_url: it.img || ""
+  }));
+  if(items.length === 0){ alert("Tu carrito está vacío."); return; }
+
+  const payload = { customer_name: "", customer_phone: "", items };
+
+  try{
+    const r = await fetch(`${API_BASE}/orders/`, {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(payload)
+    });
+    if(!r.ok){ throw new Error(`HTTP ${r.status} - ${await r.text()}`); }
+    const order = await r.json();
+    cart = {}; saveCart(); renderCart();
+    alert(`¡Orden creada! #${order.id} Total: ${money(order.total)}`);
+  }catch(err){
+    console.error(err);
+    alert("No se pudo crear la orden. Verifica que la API esté arriba y que no haya bloqueos CORS.");
+  }
+}
+document.addEventListener("click", (e)=>{ if(e.target.closest(".checkout")) checkout(); });
+
+/* ==================== INIT ==================== */
+document.addEventListener("DOMContentLoaded", ()=>{
+  renderCart();
+  loadCatalog();
+});
+</script>
+</body>
+</html>
